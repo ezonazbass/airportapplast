@@ -1,9 +1,10 @@
 // Fallback for using MaterialIcons on Android and web.
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
+import { SymbolViewProps, SymbolWeight } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
+import { SFSymbols6_0 } from 'sf-symbols-typescript';
 
 type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
 type IconSymbolName = keyof typeof MAPPING;
@@ -14,28 +15,37 @@ type IconSymbolName = keyof typeof MAPPING;
  * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
  */
 const MAPPING = {
-  'house.fill': 'home',
-  'paperplane.fill': 'send',
-  'chevron.left.forwardslash.chevron.right': 'code',
+  'person.fill': 'person',
+  'airplane': 'flight',
+  'moon.fill': 'dark-mode',
+  'sun.max.fill': 'light-mode',
+  'person.crop.circle.fill': 'account-circle',
+  'ticket.fill': 'confirmation-number',
+  'clock.fill': 'history',
+  'creditcard.fill': 'credit-card',
+  'crown.fill': 'star',
+  'car.fill': 'directions-car',
+  'suitcase.fill': 'work',
+  'bell.fill': 'notifications',
+  'globe': 'language',
+  'lock.fill': 'lock',
+  'questionmark.circle.fill': 'help',
   'chevron.right': 'chevron-right',
 } as IconMapping;
+
+interface IconSymbolProps {
+  name: SFSymbols6_0;
+  size: number;
+  color: string | OpaqueColorValue;
+  style?: StyleProp<TextStyle>;
+  weight?: SymbolWeight;
+}
 
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
  * This ensures a consistent look across platforms, and optimal resource usage.
  * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
  */
-export function IconSymbol({
-  name,
-  size = 24,
-  color,
-  style,
-}: {
-  name: IconSymbolName;
-  size?: number;
-  color: string | OpaqueColorValue;
-  style?: StyleProp<TextStyle>;
-  weight?: SymbolWeight;
-}) {
+export function IconSymbol({ name, size, color, style, weight }: IconSymbolProps) {
   return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
 }
