@@ -40,6 +40,15 @@ export default function TabLayout() {
         options={{
           title: 'Ana Sayfa',
           tabBarIcon: ({ color, size }) => (
+            <IconSymbol name="house.fill" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="flights"
+        options={{
+          title: 'Uçuşlar',
+          tabBarIcon: ({ color, size }) => (
             <IconSymbol name="airplane" size={size} color={color} />
           ),
         }}
@@ -55,4 +64,4 @@ export default function TabLayout() {
       />
     </Tabs>
   );
-}
+} 

@@ -19,6 +19,7 @@ const MAPPING = {
   'airplane': 'flight',
   'moon.fill': 'dark-mode',
   'sun.max.fill': 'light-mode',
+  'person.crop.circle': 'account-circle',
   'person.crop.circle.fill': 'account-circle',
   'ticket.fill': 'confirmation-number',
   'clock.fill': 'history',
@@ -31,6 +32,12 @@ const MAPPING = {
   'lock.fill': 'lock',
   'questionmark.circle.fill': 'help',
   'chevron.right': 'chevron-right',
+  'arrow.triangle.2.circlepath': 'swap-horiz',
+  'airplane.departure': 'flight-takeoff',
+  'airplane.arrival': 'flight-land',
+  'calendar': 'calendar-today',
+  'xmark.circle.fill': 'cancel',
+  'magnifyingglass': 'search',
 } as IconMapping;
 
 interface IconSymbolProps {

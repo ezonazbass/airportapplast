@@ -1,5 +1,6 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
+import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,7 +11,8 @@ type MenuItem = {
   icon: 'person.crop.circle' | 'ticket.fill' | 'clock.fill' | 'creditcard.fill' | 'crown.fill' | 'car.fill' | 'suitcase.fill' | 'bell.fill' | 'globe' | 'lock.fill' | 'questionmark.circle.fill';
 };
 
-export default function AccountScreen({ navigation }) {
+export default function AccountScreen() {
+  const navigation = useNavigation();
   const { theme, toggleTheme } = useTheme();
   const colors = Colors[theme as keyof typeof Colors];
   const [activeIndex, setActiveIndex] = useState(theme === 'dark' ? 1 : 0);
