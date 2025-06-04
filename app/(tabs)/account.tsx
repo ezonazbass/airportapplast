@@ -1,157 +1,172 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
-import React, { useEffect, useState } from 'react';
-import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
-type MenuItem = {
-  label: string;
-  icon: 'person.crop.circle' | 'ticket.fill' | 'clock.fill' | 'creditcard.fill' | 'crown.fill' | 'car.fill' | 'suitcase.fill' | 'bell.fill' | 'globe' | 'lock.fill' | 'questionmark.circle.fill';
-};
-
-export default function AccountScreen({ navigation }) {
-  const { theme, toggleTheme } = useTheme();
+export default function AccountScreen() {
+  const { theme, setTheme } = useTheme();
   const colors = Colors[theme as keyof typeof Colors];
-  const [activeIndex, setActiveIndex] = useState(theme === 'dark' ? 1 : 0);
-  const slideAnim = React.useRef(new Animated.Value(activeIndex)).current;
-
-  const handleThemeChange = (index: number) => {
-    setActiveIndex(index);
-    Animated.spring(slideAnim, {
-      toValue: index,
-      useNativeDriver: true,
-    }).start();
-    if (index === 0 && theme === 'dark') {
-      toggleTheme();
-    } else if (index === 1 && theme === 'light') {
-      toggleTheme();
-    }
-  };
+  const router = useRouter();
 
   const sections = [
     {
       title: 'Hesap',
       data: [
-        { label: 'Profil Bilgileri', icon: 'person.crop.circle' as const },
-        { label: 'Biletlerim', icon: 'ticket.fill' as const },
-        { label: 'Geçmiş Uçuşlar', icon: 'clock.fill' as const },
-        { label: 'Ödeme Yöntemleri', icon: 'creditcard.fill' as const },
+        {
+          id: '1',
+          label: 'Profil Bilgileri',
+          icon: 'person.fill',
+          route: '/screens/profile-info',
+        },
+        {
+          id: '2',
+          label: 'Biletlerim',
+          icon: 'ticket.fill',
+          route: '/screens/my-tickets',
+        },
+        {
+          id: '3',
+          label: 'Geçmiş Uçuşlar',
+          icon: 'clock.fill',
+          route: '/screens/flight-history',
+        },
+        {
+          id: '4',
+          label: 'Ödeme Yöntemleri',
+          icon: 'creditcard.fill',
+          route: '/screens/payment-methods',
+        },
       ],
     },
     {
       title: 'Havalimanı Hizmetleri',
       data: [
-        { label: 'VIP Lounge', icon: 'crown.fill' as const },
-        { label: 'Park Yeri Rezervasyonu', icon: 'car.fill' as const },
-        { label: 'Bagaj Takip', icon: 'suitcase.fill' as const },
+        {
+          id: '5',
+          label: 'VIP Lounge',
+          icon: 'star.fill',
+          route: '/screens/vip-lounge',
+        },
+        {
+          id: '6',
+          label: 'Park Yeri Rezervasyonu',
+          icon: 'car.fill',
+          route: '/screens/parking',
+        },
+        {
+          id: '7',
+          label: 'Bagaj Takip',
+          icon: 'suitcase.fill',
+          route: '/screens/baggage-tracking',
+        },
       ],
     },
     {
       title: 'Ayarlar',
       data: [
-        { label: 'Bildirimler', icon: 'bell.fill' as const },
-        { label: 'Dil Seçimi', icon: 'globe' as const },
-        { label: 'Gizlilik', icon: 'lock.fill' as const },
-        { label: 'Yardım', icon: 'questionmark.circle.fill' as const },
+        {
+          id: '8',
+          label: 'Bildirimler',
+          icon: 'bell.fill',
+          route: '/screens/notifications',
+        },
+        {
+          id: '9',
+          label: 'Dil',
+          icon: 'globe',
+          route: '/screens/language',
+        },
+        {
+          id: '10',
+          label: 'Gizlilik',
+          icon: 'lock.fill',
+          route: '/screens/privacy',
+        },
+        {
+          id: '11',
+          label: 'Yardım ve Destek',
+          icon: 'questionmark.circle.fill',
+          route: '/screens/help',
+        },
       ],
     },
   ];
 
-  useEffect(() => {
-    navigation?.setOptions({
-      title: 'Hesabım',
-      headerRight: () => (
-        <TouchableOpacity onPress={toggleTheme} style={{ marginRight: 16 }}>
-          <IconSymbol name={theme === 'dark' ? 'sun.max.fill' : 'moon.fill'} size={24} color={Colors[theme as keyof typeof Colors].primary} />
-        </TouchableOpacity>
-      ),
-    });
-  }, [navigation, theme]);
-
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
-      <ScrollView>
-        <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.primary + '20' }]}> 
-          <View style={styles.avatarContainer}>
-            <View style={[styles.avatarBg, { backgroundColor: colors.primary + '22' }]}> 
-              <IconSymbol name="person.crop.circle.fill" size={56} color={colors.primary} />
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={styles.header}>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Hesabım</Text>
+      </View>
+
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={styles.profileInfo}>
+              <View style={[styles.avatar, { backgroundColor: colors.primary + '22' }]}>
+                <IconSymbol name="person.fill" size={32} color={colors.primary} />
+              </View>
+              <View style={styles.profileText}>
+                <Text style={[styles.profileName, { color: colors.text }]}>Ahmet Yılmaz</Text>
+                <Text style={[styles.profileEmail, { color: colors.secondary }]}>
+                  ahmet.yilmaz@example.com
+                </Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              style={[styles.editButton, { backgroundColor: colors.primary }]}
+              onPress={() => router.push('/screens/profile-info')}
+            >
+              <Text style={styles.editButtonText}>Profili Düzenle</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={[styles.themeSelector, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.themeTitle, { color: colors.text }]}>Tema</Text>
+            <View style={styles.themeButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.themeButton,
+                  theme === 'light' && { backgroundColor: colors.primary },
+                ]}
+                onPress={() => setTheme('light')}
+              >
+                <IconSymbol name="sun.max.fill" size={24} color={theme === 'light' ? '#FFFFFF' : colors.text} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.themeButton,
+                  theme === 'dark' && { backgroundColor: colors.primary },
+                ]}
+                onPress={() => setTheme('dark')}
+              >
+                <IconSymbol name="moon.fill" size={24} color={theme === 'dark' ? '#FFFFFF' : colors.text} />
+              </TouchableOpacity>
             </View>
           </View>
-          <Text style={[styles.userName, { color: colors.primary }]}>Ahmet Yılmaz</Text>
-          <Text style={[styles.userEmail, { color: colors.secondary }]}>ahmet.yilmaz@example.com</Text>
-        </View>
 
-        {/* Theme Selector - profile card'ın hemen altında ve daha küçük */}
-        <View style={styles.themeSelectorContainerSmall}>
-          <View style={[styles.themeSelectorSmall, { backgroundColor: colors.card, borderColor: colors.border, shadowColor: colors.primary + '22', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 }]}> 
-            <Animated.View 
-              style={[
-                styles.themeSelectorTrackSmall,
-                {
-                  backgroundColor: colors.primary + '33',
-                  shadowColor: colors.primary,
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.12,
-                  shadowRadius: 8,
-                  elevation: 2,
-                  transform: [{
-                    translateX: slideAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [4, 56],
-                    }),
-                  }],
-                },
-              ]}
-            />
-            <TouchableOpacity
-              style={[styles.themeOptionSmall, activeIndex === 0 && styles.activeThemeOptionSmall, activeIndex === 0 && { backgroundColor: colors.primary + '22' }]}
-              onPress={() => handleThemeChange(0)}
-              activeOpacity={0.8}
-            >
-              <IconSymbol name="sun.max.fill" size={16} color={activeIndex === 0 ? colors.primary : colors.secondary} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.themeOptionSmall, activeIndex === 1 && styles.activeThemeOptionSmall, activeIndex === 1 && { backgroundColor: colors.primary + '22' }]}
-              onPress={() => handleThemeChange(1)}
-              activeOpacity={0.8}
-            >
-              <IconSymbol name="moon.fill" size={16} color={activeIndex === 1 ? colors.primary : colors.secondary} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {sections.map((section, idx) => (
-          <View key={idx} style={styles.sectionWrapper}>
-            <Text style={[styles.sectionHeader, { color: colors.primary, backgroundColor: colors.background }]}> 
-              {section.title}
-            </Text>
-            <View style={styles.sectionList}>
-              {section.data.map((item, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={[
-                    styles.menuItem,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: colors.border,
-                      shadowColor: colors.primary + '10',
-                    },
-                  ]}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.menuItemLeft}>
-                    <View style={[styles.iconCircle, { backgroundColor: colors.primary + '18' }]}> 
-                      <IconSymbol name={item.icon} size={22} color={colors.primary} />
+          {sections.map((section) => (
+            <View key={section.title} style={styles.sectionWrapper}>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>{section.title}</Text>
+              <View style={[styles.sectionContent, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                {section.data.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.menuItem}
+                    onPress={() => router.push(item.route)}
+                  >
+                    <View style={styles.menuItemLeft}>
+                      <IconSymbol name={item.icon as any} size={24} color={colors.primary} />
+                      <Text style={[styles.menuItemLabel, { color: colors.text }]}>{item.label}</Text>
                     </View>
-                    <Text style={[styles.menuItemText, { color: colors.text }]}>{item.label}</Text>
-                  </View>
-                  <IconSymbol name="chevron.right" size={16} color={colors.secondary} />
-                </TouchableOpacity>
-              ))}
+                    <IconSymbol name="chevron.right" size={20} color={colors.secondary} />
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
-          </View>
-        ))}
+          ))}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -161,117 +176,110 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  header: {
+    padding: 16,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: 16,
+  },
   profileCard: {
-    alignItems: 'center',
-    padding: 28,
-    borderRadius: 28,
-    margin: 18,
+    padding: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    marginBottom: 12,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 4,
+    marginBottom: 16,
   },
-  avatarContainer: {
-    marginBottom: 10,
+  profileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
   },
-  avatarBg: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+  avatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E3E6F5',
+    marginRight: 16,
   },
-  userName: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 2,
+  profileText: {
+    flex: 1,
   },
-  userEmail: {
-    fontSize: 14,
+  profileName: {
+    fontSize: 18,
+    fontWeight: '600',
     marginBottom: 4,
   },
-  sectionWrapper: {
-    marginTop: 24,
-    marginHorizontal: 10,
+  profileEmail: {
+    fontSize: 14,
   },
-  sectionHeader: {
-    fontSize: 17,
-    fontWeight: '700',
-    marginBottom: 10,
-    marginLeft: 8,
-    letterSpacing: 0.2,
+  editButton: {
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
   },
-  sectionList: {
+  editButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  themeSelector: {
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  themeTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  themeButtons: {
+    flexDirection: 'row',
     gap: 12,
+  },
+  themeButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F5F5',
+  },
+  sectionWrapper: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  sectionContent: {
+    borderRadius: 20,
+    borderWidth: 1,
+    overflow: 'hidden',
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginBottom: 0,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F5F5F5',
   },
   menuItemLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
-  iconCircle: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 14,
-  },
-  menuItemText: {
+  menuItemLabel: {
     fontSize: 16,
     fontWeight: '500',
-  },
-  themeSelectorContainerSmall: {
-    marginTop: 0,
-    marginBottom: 8,
-    alignItems: 'center',
-  },
-  themeSelectorSmall: {
-    flexDirection: 'row',
-    height: 32,
-    width: 64,
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: 'hidden',
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-  },
-  themeSelectorTrackSmall: {
-    position: 'absolute',
-    width: 28,
-    height: 24,
-    borderRadius: 12,
-    top: 4,
-    left: 4,
-    zIndex: 1,
-  },
-  themeOptionSmall: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 32,
-    zIndex: 2,
-  },
-  activeThemeOptionSmall: {
-    backgroundColor: 'transparent',
-    borderRadius: 12,
   },
 }); 
