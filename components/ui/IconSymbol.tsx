@@ -31,6 +31,7 @@ const MAPPING = {
   'lock.fill': 'lock',
   'questionmark.circle.fill': 'help',
   'chevron.right': 'chevron-right',
+  'house':'house'
 } as IconMapping;
 
 interface IconSymbolProps {
