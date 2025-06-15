@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -65,7 +65,7 @@ export default function HelpScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>Yardım ve Destek</Text>
       </View>
 
-      <View style={styles.content}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Yardım Merkezi</Text>
         
         {helpSections.map((section) => (
@@ -112,7 +112,7 @@ export default function HelpScreen() {
             Size daha iyi hizmet verebilmek için geri bildirimlerinizi bekliyoruz. Sorun yaşadığınızda veya önerileriniz olduğunda bizimle iletişime geçebilirsiniz.
           </Text>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -133,6 +133,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  scrollView: {
+    flex: 1,
   },
   content: {
     padding: 16,

@@ -1,11 +1,11 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
-export default function VIPLoungeScreen() {
+export default function VipLoungeScreen() {
   const { theme } = useTheme();
   const colors = Colors[theme as keyof typeof Colors];
   const router = useRouter();
@@ -14,19 +14,30 @@ export default function VIPLoungeScreen() {
     {
       id: '1',
       name: 'Turkish Airlines Lounge',
-      location: 'Terminal 1, Kat 3',
-      amenities: ['Ücretsiz Wi-Fi', 'Yemek Servisi', 'Bar', 'Duş'],
-      price: '€50',
-      rating: 4.8,
+      location: 'İstanbul Havalimanı',
+      terminal: 'Terminal 1',
+      status: 'Aktif',
+      price: '₺750',
+      features: ['Açık Büfe', 'İş Odası', 'Duş Odası', 'Çocuk Oyun Alanı']
     },
     {
       id: '2',
-      name: 'Primeclass Lounge',
-      location: 'Terminal 2, Kat 2',
-      amenities: ['Ücretsiz Wi-Fi', 'Yemek Servisi', 'Bar', 'Duş', 'Masaj'],
-      price: '€45',
-      rating: 4.6,
+      name: 'Turkish Airlines Lounge',
+      location: 'İstanbul Havalimanı',
+      terminal: 'Terminal 2',
+      status: 'Aktif',
+      price: '₺850',
+      features: ['Premium Bar', 'Masaj Odası', 'Uyku Odası', 'Spa Hizmeti']
     },
+    {
+      id: '3',
+      name: 'Turkish Airlines Lounge',
+      location: 'İstanbul Havalimanı',
+      terminal: 'Terminal 3',
+      status: 'Aktif',
+      price: '₺950',
+      features: ['Gourmet Restoran', 'Sinema Odası', 'Fitness Merkezi', 'Özel Toplantı Odaları']
+    }
   ];
 
   return (
@@ -38,46 +49,49 @@ export default function VIPLoungeScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>VIP Lounge</Text>
       </View>
 
-      <View style={styles.content}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Mevcut Loungeler</Text>
-        
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         {lounges.map((lounge) => (
           <View
             key={lounge.id}
             style={[styles.loungeCard, { backgroundColor: colors.card, borderColor: colors.border }]}
           >
             <View style={styles.loungeHeader}>
-              <View>
+              <View style={styles.loungeInfo}>
                 <Text style={[styles.loungeName, { color: colors.text }]}>{lounge.name}</Text>
-                <Text style={[styles.loungeLocation, { color: colors.secondary }]}>{lounge.location}</Text>
-              </View>
-              <View style={[styles.ratingContainer, { backgroundColor: colors.primary + '22' }]}>
-                <IconSymbol name="star.fill" size={16} color={colors.primary} />
-                <Text style={[styles.ratingText, { color: colors.primary }]}>{lounge.rating}</Text>
-              </View>
-            </View>
-
-            <View style={styles.amenitiesContainer}>
-              {lounge.amenities.map((amenity, index) => (
-                <View key={index} style={styles.amenityItem}>
-                  <IconSymbol name="checkmark.circle.fill" size={16} color={colors.primary} />
-                  <Text style={[styles.amenityText, { color: colors.text }]}>{amenity}</Text>
+                <View style={[styles.statusBadge, { backgroundColor: colors.primary + '22' }]}>
+                  <Text style={[styles.statusText, { color: colors.primary }]}>{lounge.status}</Text>
                 </View>
-              ))}
+              </View>
             </View>
 
-            <View style={styles.loungeFooter}>
-              <Text style={[styles.priceText, { color: colors.primary }]}>{lounge.price}</Text>
-              <TouchableOpacity
-                style={[styles.reserveButton, { backgroundColor: colors.primary }]}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.reserveButtonText, { color: colors.buttonText }]}>Rezervasyon Yap</Text>
-              </TouchableOpacity>
+            <View style={styles.loungeDetails}>
+              <View style={styles.detailRow}>
+                <IconSymbol name="location.fill" size={20} color={colors.secondary} />
+                <Text style={[styles.detailText, { color: colors.text }]}>{lounge.location}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <IconSymbol name="airplane" size={20} color={colors.secondary} />
+                <Text style={[styles.detailText, { color: colors.text }]}>{lounge.terminal}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <IconSymbol name="creditcard.fill" size={20} color={colors.secondary} />
+                <Text style={[styles.detailText, { color: colors.text }]}>{lounge.price}</Text>
+              </View>
             </View>
+
+            <TouchableOpacity 
+              style={styles.viewDetailsButton}
+              onPress={() => router.push({
+                pathname: '/screens/vip-lounge-detail',
+                params: { lounge: JSON.stringify(lounge) }
+              })}
+            >
+              <Text style={[styles.viewDetailsText, { color: colors.primary }]}>Detayları Gör</Text>
+              <IconSymbol name="chevron.right" size={16} color={colors.primary} />
+            </TouchableOpacity>
           </View>
         ))}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -99,13 +113,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
+  scrollView: {
+    flex: 1,
+  },
   content: {
     padding: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 16,
   },
   loungeCard: {
     borderRadius: 20,
@@ -116,62 +128,50 @@ const styles = StyleSheet.create({
   loungeHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 16,
   },
+  loungeInfo: {
+    flex: 1,
+  },
   loungeName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
   },
-  loungeLocation: {
-    fontSize: 14,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  statusBadge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    gap: 4,
+    alignSelf: 'flex-start',
   },
-  ratingText: {
-    fontSize: 14,
+  statusText: {
+    fontSize: 12,
     fontWeight: '600',
   },
-  amenitiesContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  loungeDetails: {
     gap: 12,
-    marginBottom: 16,
   },
-  amenityItem: {
+  detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 8,
   },
-  amenityText: {
+  detailText: {
     fontSize: 14,
   },
-  loungeFooter: {
+  viewDetailsButton: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0,0,0,0.1)',
     paddingTop: 16,
+    marginTop: 16,
   },
-  priceText: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  reserveButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 12,
-  },
-  reserveButtonText: {
+  viewDetailsText: {
     fontSize: 14,
     fontWeight: '600',
-  },
+  }
 }); 

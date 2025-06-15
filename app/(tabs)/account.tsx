@@ -1,14 +1,49 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Animated, PanResponder, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function AccountScreen() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, transition, setTransition } = useTheme();
   const colors = Colors[theme as keyof typeof Colors];
   const router = useRouter();
+  const [sliderPosition] = useState(new Animated.Value(theme === 'light' ? 0 : 1));
+  const sliderWidth = useRef(0);
+  const lastPosition = useRef(theme === 'light' ? 0 : 1);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, gestureState) => {
+        const newPosition = Math.max(0, Math.min(1, lastPosition.current + gestureState.dx / sliderWidth.current));
+        sliderPosition.setValue(newPosition);
+        setTransition(newPosition);
+        
+        // Kademeli tema değişimi
+        if (newPosition < 0.5) {
+          setTheme('light');
+        } else {
+          setTheme('dark');
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const newPosition = Math.max(0, Math.min(1, lastPosition.current + gestureState.dx / sliderWidth.current));
+        sliderPosition.setValue(newPosition);
+        setTransition(newPosition);
+        lastPosition.current = newPosition;
+        
+        // Kullanıcının bıraktığı noktada kalması için
+        if (newPosition < 0.5) {
+          setTheme('light');
+        } else {
+          setTheme('dark');
+        }
+      },
+    })
+  ).current;
 
   const sections = [
     {
@@ -28,12 +63,18 @@ export default function AccountScreen() {
         },
         {
           id: '3',
+          label: 'Rezervasyonlarım',
+          icon: 'calendar',
+          route: '/screens/my-reservations',
+        },
+        {
+          id: '4',
           label: 'Geçmiş Uçuşlar',
           icon: 'clock.fill',
           route: '/screens/flight-history',
         },
         {
-          id: '4',
+          id: '5',
           label: 'Ödeme Yöntemleri',
           icon: 'creditcard.fill',
           route: '/screens/payment-methods',
@@ -44,19 +85,19 @@ export default function AccountScreen() {
       title: 'Havalimanı Hizmetleri',
       data: [
         {
-          id: '5',
+          id: '6',
           label: 'VIP Lounge',
           icon: 'star.fill',
           route: '/screens/vip-lounge',
         },
         {
-          id: '6',
+          id: '7',
           label: 'Park Yeri Rezervasyonu',
           icon: 'car.fill',
           route: '/screens/parking',
         },
         {
-          id: '7',
+          id: '8',
           label: 'Bagaj Takip',
           icon: 'suitcase.fill',
           route: '/screens/baggage-tracking',
@@ -67,25 +108,25 @@ export default function AccountScreen() {
       title: 'Ayarlar',
       data: [
         {
-          id: '8',
+          id: '9',
           label: 'Bildirimler',
           icon: 'bell.fill',
           route: '/screens/notifications',
         },
         {
-          id: '9',
+          id: '10',
           label: 'Dil',
           icon: 'globe',
           route: '/screens/language',
         },
         {
-          id: '10',
+          id: '11',
           label: 'Gizlilik',
           icon: 'lock.fill',
           route: '/screens/privacy',
         },
         {
-          id: '11',
+          id: '12',
           label: 'Yardım ve Destek',
           icon: 'questionmark.circle.fill',
           route: '/screens/help',
@@ -95,13 +136,18 @@ export default function AccountScreen() {
   ];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { 
+      backgroundColor: theme === 'light' 
+        ? Colors.light.background 
+        : Colors.dark.background,
+      opacity: 1 - transition * 0.5 // Kademeli geçiş için opacity
+    }]}>
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Hesabım</Text>
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
+      <ScrollView style={styles.content}>
+        <View style={styles.sections}>
           <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.profileInfo}>
               <View style={[styles.avatar, { backgroundColor: colors.primary + '22' }]}>
@@ -114,35 +160,61 @@ export default function AccountScreen() {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity
-              style={[styles.editButton, { backgroundColor: colors.primary }]}
-              onPress={() => router.push('/screens/profile-info')}
-            >
-              <Text style={styles.editButtonText}>Profili Düzenle</Text>
-            </TouchableOpacity>
           </View>
 
-          <View style={[styles.themeSelector, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.themeTitle, { color: colors.text }]}>Tema</Text>
-            <View style={styles.themeButtons}>
-              <TouchableOpacity
+          <View style={[styles.themeSelector, { 
+            backgroundColor: theme === 'light' 
+              ? Colors.light.card 
+              : Colors.dark.card,
+            borderColor: theme === 'light' 
+              ? Colors.light.border 
+              : Colors.dark.border,
+            opacity: 1 - transition * 0.5 // Kademeli geçiş için opacity
+          }]}>
+            <Text style={[styles.themeTitle, { 
+              color: theme === 'light' 
+                ? Colors.light.text 
+                : Colors.dark.text,
+              opacity: 1 - transition * 0.5 // Kademeli geçiş için opacity
+            }]}>Tema</Text>
+            <View 
+              style={styles.themeSliderContainer}
+              onLayout={(event) => {
+                sliderWidth.current = event.nativeEvent.layout.width;
+              }}
+            >
+              <View style={styles.themeSliderTrack}>
+                <IconSymbol 
+                  name="sun.max.fill" 
+                  size={24} 
+                  color={theme === 'light' ? Colors.light.text : Colors.dark.text} 
+                  style={[styles.themeIcon, { opacity: 1 - transition * 0.5 }]} 
+                />
+                <View style={styles.themeSliderLine} />
+                <IconSymbol 
+                  name="moon.fill" 
+                  size={24} 
+                  color={theme === 'light' ? Colors.light.text : Colors.dark.text} 
+                  style={[styles.themeIcon, { opacity: 1 - transition * 0.5 }]} 
+                />
+              </View>
+              <Animated.View
+                {...panResponder.panHandlers}
                 style={[
-                  styles.themeButton,
-                  theme === 'light' && { backgroundColor: colors.primary },
+                  styles.themeSliderThumb,
+                  {
+                    transform: [
+                      {
+                        translateX: sliderPosition.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, sliderWidth.current - 40],
+                        }),
+                      },
+                    ],
+                    backgroundColor: theme === 'light' ? Colors.light.primary : Colors.dark.primary,
+                  },
                 ]}
-                onPress={() => setTheme('light')}
-              >
-                <IconSymbol name="sun.max.fill" size={24} color={theme === 'light' ? '#FFFFFF' : colors.text} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.themeButton,
-                  theme === 'dark' && { backgroundColor: colors.primary },
-                ]}
-                onPress={() => setTheme('dark')}
-              >
-                <IconSymbol name="moon.fill" size={24} color={theme === 'dark' ? '#FFFFFF' : colors.text} />
-              </TouchableOpacity>
+              />
             </View>
           </View>
 
@@ -154,7 +226,7 @@ export default function AccountScreen() {
                   <TouchableOpacity
                     key={item.id}
                     style={styles.menuItem}
-                    onPress={() => router.push(item.route)}
+                    onPress={() => router.push(item.route as any)}
                   >
                     <View style={styles.menuItemLeft}>
                       <IconSymbol name={item.icon as any} size={24} color={colors.primary} />
@@ -178,27 +250,28 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
   },
-  scrollView: {
+  content: {
     flex: 1,
   },
-  content: {
+  sections: {
     padding: 16,
   },
   profileCard: {
-    padding: 16,
     borderRadius: 20,
     borderWidth: 1,
+    padding: 16,
     marginBottom: 16,
   },
   profileInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
   },
   avatar: {
     width: 64,
@@ -219,38 +292,53 @@ const styles = StyleSheet.create({
   profileEmail: {
     fontSize: 14,
   },
-  editButton: {
-    padding: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  editButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   themeSelector: {
-    padding: 16,
     borderRadius: 20,
     borderWidth: 1,
+    padding: 16,
     marginBottom: 16,
   },
   themeTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
   },
-  themeButtons: {
-    flexDirection: 'row',
-    gap: 12,
+  themeSliderContainer: {
+    height: 40,
+    position: 'relative',
   },
-  themeButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  themeSliderTrack: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F5F5F5',
+    height: '100%',
+    paddingHorizontal: 8,
+  },
+  themeSliderLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: '#E0E0E0',
+    marginHorizontal: 8,
+  },
+  themeIcon: {
+    width: 24,
+    height: 24,
+  },
+  themeSliderThumb: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    top: 0,
+    left: 0,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   sectionWrapper: {
     marginBottom: 16,

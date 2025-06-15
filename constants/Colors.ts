@@ -9,6 +9,7 @@ const tintColorDark = '#fff';
 export const Colors = {
   light: {
     text: '#1A237E', // Lacivert (navy blue)
+    textSecondary: '#607D8B', // Gri ton
     background: '#FFFFFF', // Beyaz
     tint: '#1976D2', // Mavi
     icon: '#1A237E',
@@ -29,6 +30,7 @@ export const Colors = {
   },
   dark: {
     text: '#ECEFF1', // Açık gri
+    textSecondary: '#B0BEC5', // Açık gri
     background: '#181A20', // Daha koyu gri
     tint: '#90CAF9', // Açık mavi
     icon: '#ECEFF1',

@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -50,7 +50,7 @@ export default function PrivacyScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>Gizlilik</Text>
       </View>
 
-      <View style={styles.content}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>İzinler ve Gizlilik</Text>
         
         {privacySettings.map((setting) => (
@@ -98,7 +98,7 @@ export default function PrivacyScreen() {
             Gizlilik ayarlarınızı istediğiniz zaman değiştirebilirsiniz. Verileriniz güvenli bir şekilde saklanmaktadır ve üçüncü taraflarla paylaşılmamaktadır.
           </Text>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -119,6 +119,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  scrollView: {
+    flex: 1,
   },
   content: {
     padding: 16,

@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -11,42 +11,12 @@ export default function LanguageScreen() {
   const router = useRouter();
 
   const languages = [
-    {
-      id: 'tr',
-      name: 'Türkçe',
-      nativeName: 'Türkçe',
-      isSelected: true,
-    },
-    {
-      id: 'en',
-      name: 'English',
-      nativeName: 'English',
-      isSelected: false,
-    },
-    {
-      id: 'de',
-      name: 'Deutsch',
-      nativeName: 'Deutsch',
-      isSelected: false,
-    },
-    {
-      id: 'fr',
-      name: 'Français',
-      nativeName: 'Français',
-      isSelected: false,
-    },
-    {
-      id: 'es',
-      name: 'Español',
-      nativeName: 'Español',
-      isSelected: false,
-    },
-    {
-      id: 'ar',
-      name: 'العربية',
-      nativeName: 'العربية',
-      isSelected: false,
-    },
+    { id: 'tr', name: 'Türkçe', nativeName: 'Türkçe', isSelected: true },
+    { id: 'en', name: 'English', nativeName: 'English', isSelected: false },
+    { id: 'de', name: 'Deutsch', nativeName: 'Deutsch', isSelected: false },
+    { id: 'fr', name: 'Français', nativeName: 'Français', isSelected: false },
+    { id: 'es', name: 'Español', nativeName: 'Español', isSelected: false },
+    { id: 'ar', name: 'العربية', nativeName: 'العربية', isSelected: false },
   ];
 
   return (
@@ -58,9 +28,14 @@ export default function LanguageScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>Dil Seçimi</Text>
       </View>
 
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        bounces={true}
+      >
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Uygulama Dili</Text>
-        
+
         {languages.map((language) => (
           <TouchableOpacity
             key={language.id}
@@ -85,7 +60,7 @@ export default function LanguageScreen() {
             Dil değişikliği uygulamanın yeniden başlatılmasını gerektirebilir. Değişiklikler hemen uygulanacaktır.
           </Text>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -107,8 +82,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
-  content: {
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
     padding: 16,
+    paddingBottom: 40,
   },
   sectionTitle: {
     fontSize: 18,
@@ -149,4 +128,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-}); 
+});

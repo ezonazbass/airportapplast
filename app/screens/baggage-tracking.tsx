@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -49,7 +49,12 @@ export default function BaggageTrackingScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>Bagaj Takip</Text>
       </View>
 
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        bounces={true}
+      >
         <View style={[styles.searchContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <IconSymbol name="magnifyingglass" size={20} color={colors.secondary} />
           <Text style={[styles.searchPlaceholder, { color: colors.secondary }]}>
@@ -58,7 +63,7 @@ export default function BaggageTrackingScreen() {
         </View>
 
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Son Bagajlarım</Text>
-        
+
         {baggageItems.map((item) => (
           <View
             key={item.id}
@@ -99,7 +104,7 @@ export default function BaggageTrackingScreen() {
             </TouchableOpacity>
           </View>
         ))}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -121,8 +126,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
-  content: {
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
     padding: 16,
+    paddingBottom: 40,
   },
   searchContainer: {
     flexDirection: 'row',
@@ -198,4 +207,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-}); 
+});

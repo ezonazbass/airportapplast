@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -33,56 +33,63 @@ export default function ParkingScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <IconSymbol name="chevron.left" size={24} color={colors.primary} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Park Yeri Rezervasyonu</Text>
-      </View>
+      <View style={{ flex: 1 }}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <IconSymbol name="chevron.left" size={24} color={colors.primary} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>Park Yeri Rezervasyonu</Text>
+        </View>
 
-      <View style={styles.content}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Mevcut Park Alanları</Text>
-        
-        {parkingLots.map((lot) => (
-          <View
-            key={lot.id}
-            style={[styles.parkingCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-          >
-            <View style={styles.parkingHeader}>
-              <View>
-                <Text style={[styles.parkingName, { color: colors.text }]}>{lot.name}</Text>
-                <Text style={[styles.parkingDistance, { color: colors.secondary }]}>{lot.distance}</Text>
-              </View>
-              <View style={[styles.availabilityContainer, { backgroundColor: colors.primary + '22' }]}>
-                <Text style={[styles.availabilityText, { color: colors.primary }]}>
-                  {lot.availableSpots}/{lot.totalSpots}
-                </Text>
-              </View>
-            </View>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[styles.scrollContent, { minHeight: '100%' }]}
+          showsVerticalScrollIndicator={true}
+          bounces={true}
+        >
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Mevcut Park Alanları</Text>
 
-            <View style={styles.featuresContainer}>
-              {lot.features.map((feature, index) => (
-                <View key={index} style={styles.featureItem}>
-                  <IconSymbol name="checkmark.circle.fill" size={16} color={colors.primary} />
-                  <Text style={[styles.featureText, { color: colors.text }]}>{feature}</Text>
+          {parkingLots.map((lot) => (
+            <View
+              key={lot.id}
+              style={[styles.parkingCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+            >
+              <View style={styles.parkingHeader}>
+                <View>
+                  <Text style={[styles.parkingName, { color: colors.text }]}>{lot.name}</Text>
+                  <Text style={[styles.parkingDistance, { color: colors.secondary }]}>{lot.distance}</Text>
                 </View>
-              ))}
-            </View>
-
-            <View style={styles.parkingFooter}>
-              <View>
-                <Text style={[styles.priceLabel, { color: colors.secondary }]}>Saatlik Ücret</Text>
-                <Text style={[styles.priceText, { color: colors.primary }]}>{lot.pricePerHour}</Text>
+                <View style={[styles.availabilityContainer, { backgroundColor: colors.primary + '22' }]}>
+                  <Text style={[styles.availabilityText, { color: colors.primary }]}>
+                    {lot.availableSpots}/{lot.totalSpots}
+                  </Text>
+                </View>
               </View>
-              <TouchableOpacity
-                style={[styles.reserveButton, { backgroundColor: colors.primary }]}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.reserveButtonText, { color: colors.buttonText }]}>Rezervasyon Yap</Text>
-              </TouchableOpacity>
+
+              <View style={styles.featuresContainer}>
+                {lot.features.map((feature, index) => (
+                  <View key={index} style={styles.featureItem}>
+                    <IconSymbol name="checkmark.circle.fill" size={16} color={colors.primary} />
+                    <Text style={[styles.featureText, { color: colors.text }]}>{feature}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <View style={styles.parkingFooter}>
+                <View>
+                  <Text style={[styles.priceLabel, { color: colors.secondary }]}>Saatlik Ücret</Text>
+                  <Text style={[styles.priceText, { color: colors.primary }]}>{lot.pricePerHour}</Text>
+                </View>
+                <TouchableOpacity
+                  style={[styles.reserveButton, { backgroundColor: colors.primary }]}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.reserveButtonText, { color: colors.buttonText }]}>Rezervasyon Yap</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        ))}
+          ))}
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -105,8 +112,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
-  content: {
+  scrollView: {
+    flex: 1,
+    width: '100%',
+  },
+  scrollContent: {
+    flexGrow: 1,
     padding: 16,
+    paddingBottom: 40,
   },
   sectionTitle: {
     fontSize: 18,
@@ -181,4 +194,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-}); 
+});

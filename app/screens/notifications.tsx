@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -50,7 +50,7 @@ export default function NotificationsScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>Bildirimler</Text>
       </View>
 
-      <View style={styles.content}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Bildirim Ayarları</Text>
         
         {notificationSettings.map((setting) => (
@@ -84,7 +84,7 @@ export default function NotificationsScreen() {
             Bildirim ayarlarınızı istediğiniz zaman değiştirebilirsiniz. Tüm bildirimleri kapatmak için cihaz ayarlarınızı kullanabilirsiniz.
           </Text>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -105,6 +105,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     marginLeft: 8,
+  },
+  scrollView: {
+    flex: 1,
   },
   content: {
     padding: 16,

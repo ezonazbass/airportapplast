@@ -1,38 +1,39 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Appearance } from 'react-native';
+import { useColorScheme } from 'react-native';
 
-const ThemeContext = createContext({
-  theme: 'system',
-  setTheme: (theme: 'light' | 'dark' | 'system') => {},
-  toggleTheme: () => {},
-});
+type Theme = 'light' | 'dark';
 
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+interface ThemeContextType {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+  transition: number;
+  setTransition: (value: number) => void;
+}
+
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const deviceTheme = useColorScheme();
+  const [theme, setTheme] = useState<Theme>(deviceTheme || 'light');
+  const [transition, setTransition] = useState(0);
 
   useEffect(() => {
-    if (theme === 'system') {
-      const colorScheme = Appearance.getColorScheme();
-      setResolvedTheme(colorScheme === 'dark' ? 'dark' : 'light');
-      const listener = Appearance.addChangeListener(({ colorScheme }) => {
-        setResolvedTheme(colorScheme === 'dark' ? 'dark' : 'light');
-      });
-      return () => listener.remove();
-    } else {
-      setResolvedTheme(theme);
+    if (deviceTheme) {
+      setTheme(deviceTheme);
     }
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
-  };
+  }, [deviceTheme]);
 
   return (
-    <ThemeContext.Provider value={{ theme: resolvedTheme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, transition, setTransition }}>
       {children}
     </ThemeContext.Provider>
   );
-};
+}
 
-export const useTheme = () => useContext(ThemeContext); 
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+} 

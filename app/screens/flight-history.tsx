@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -13,29 +13,54 @@ export default function FlightHistoryScreen() {
   const flightHistory = [
     {
       id: 'TK789',
-      from: 'İstanbul (IST)',
-      to: 'Paris (CDG)',
+      from: 'İstanbul',
+      fromCode: 'IST',
+      to: 'Paris',
+      toCode: 'CDG',
       date: '1 Mart 2024',
       time: '10:15',
       status: 'Tamamlandı',
+      ticketNo: 'TK789-123456',
+      passenger: 'Ahmet Yılmaz',
+      seat: '15A',
+      baggage: '23 kg'
     },
     {
       id: 'TK456',
-      from: 'Paris (CDG)',
-      to: 'İstanbul (IST)',
+      from: 'Paris',
+      fromCode: 'CDG',
+      to: 'İstanbul',
+      toCode: 'IST',
       date: '8 Mart 2024',
       time: '13:30',
       status: 'Tamamlandı',
+      ticketNo: 'TK456-789012',
+      passenger: 'Ahmet Yılmaz',
+      seat: '22B',
+      baggage: '20 kg'
     },
     {
       id: 'TK123',
-      from: 'İstanbul (IST)',
-      to: 'Roma (FCO)',
+      from: 'İstanbul',
+      fromCode: 'IST',
+      to: 'Roma',
+      toCode: 'FCO',
       date: '15 Şubat 2024',
       time: '09:45',
       status: 'Tamamlandı',
+      ticketNo: 'TK123-345678',
+      passenger: 'Ahmet Yılmaz',
+      seat: '08C',
+      baggage: '25 kg'
     },
   ];
+
+  const handleFlightDetail = (flight: any) => {
+    router.push({
+      pathname: '/screens/flight-detail',
+      params: flight
+    });
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -46,8 +71,8 @@ export default function FlightHistoryScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>Geçmiş Uçuşlar</Text>
       </View>
 
-      <View style={styles.historyContainer}>
-        {flightHistory.map((flight, index) => (
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.historyContainer}>
+        {flightHistory.map((flight) => (
           <View
             key={flight.id}
             style={[styles.flightCard, { backgroundColor: colors.card, borderColor: colors.border }]}
@@ -64,8 +89,8 @@ export default function FlightHistoryScreen() {
 
             <View style={styles.routeContainer}>
               <View style={styles.routeInfo}>
-                <Text style={[styles.timeText, { color: colors.text }]}>{flight.time}</Text>
-                <Text style={[styles.airportText, { color: colors.text }]}>{flight.from}</Text>
+                <Text style={[styles.cityCode, { color: colors.primary }]}>{flight.fromCode}</Text>
+                <Text style={[styles.cityName, { color: colors.text }]}>{flight.from}</Text>
               </View>
 
               <View style={styles.routeLine}>
@@ -74,18 +99,25 @@ export default function FlightHistoryScreen() {
               </View>
 
               <View style={styles.routeInfo}>
-                <Text style={[styles.timeText, { color: colors.text }]}>{flight.time}</Text>
-                <Text style={[styles.airportText, { color: colors.text }]}>{flight.to}</Text>
+                <Text style={[styles.cityCode, { color: colors.primary }]}>{flight.toCode}</Text>
+                <Text style={[styles.cityName, { color: colors.text }]}>{flight.to}</Text>
               </View>
             </View>
 
-            <TouchableOpacity style={styles.viewDetailsButton}>
+            <View style={styles.timeContainer}>
+              <Text style={[styles.timeText, { color: colors.text }]}>Kalkış: {flight.time}</Text>
+            </View>
+
+            <TouchableOpacity 
+              style={styles.viewDetailsButton}
+              onPress={() => handleFlightDetail(flight)}
+            >
               <Text style={[styles.viewDetailsText, { color: colors.primary }]}>Uçuş Detayları</Text>
               <IconSymbol name="chevron.right" size={16} color={colors.primary} />
             </TouchableOpacity>
           </View>
         ))}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -107,11 +139,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 8,
   },
+  scrollView: {
+    flex: 1,
+  },
   historyContainer: {
     padding: 16,
   },
   flightCard: {
-    borderRadius: 20,
+    borderRadius: 12,
     borderWidth: 1,
     padding: 16,
     marginBottom: 16,
@@ -150,36 +185,46 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   routeInfo: {
-    flex: 1,
+    alignItems: 'center',
   },
-  timeText: {
-    fontSize: 16,
-    fontWeight: '600',
+  cityCode: {
+    fontSize: 20,
+    fontWeight: '700',
     marginBottom: 4,
   },
-  airportText: {
+  cityName: {
     fontSize: 14,
   },
   routeLine: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    marginHorizontal: 16,
   },
   line: {
+    flex: 1,
     height: 2,
-    width: 60,
+    marginRight: 8,
+  },
+  timeContainer: {
+    marginBottom: 16,
+  },
+  timeText: {
+    fontSize: 14,
   },
   viewDetailsButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
-    paddingTop: 16,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#007AFF',
   },
   viewDetailsText: {
     fontSize: 14,
     fontWeight: '600',
+    marginRight: 8,
   },
 }); 
+ 

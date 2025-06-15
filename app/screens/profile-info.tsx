@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -28,17 +28,17 @@ export default function ProfileInfoScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>Profil Bilgileri</Text>
       </View>
 
-      <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <View style={styles.avatarContainer}>
-          <View style={[styles.avatarBg, { backgroundColor: colors.primary + '22' }]}>
-            <IconSymbol name="person.crop.circle.fill" size={80} color={colors.primary} />
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+        <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.avatarContainer}>
+            <View style={[styles.avatarBg, { backgroundColor: colors.primary + '22' }]}>
+              <IconSymbol name="person.crop.circle.fill" size={80} color={colors.primary} />
+            </View>
           </View>
+          <Text style={[styles.userName, { color: colors.primary }]}>{profileInfo.name}</Text>
+          <Text style={[styles.userEmail, { color: colors.secondary }]}>{profileInfo.email}</Text>
         </View>
-        <Text style={[styles.userName, { color: colors.primary }]}>{profileInfo.name}</Text>
-        <Text style={[styles.userEmail, { color: colors.secondary }]}>{profileInfo.email}</Text>
-      </View>
 
-      <View style={styles.infoContainer}>
         <View style={[styles.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.infoRow}>
             <IconSymbol name="phone.fill" size={20} color={colors.primary} />
@@ -61,14 +61,14 @@ export default function ProfileInfoScreen() {
             <Text style={[styles.infoValue, { color: colors.secondary }]}>{profileInfo.passportNumber}</Text>
           </View>
         </View>
-      </View>
 
-      <TouchableOpacity 
-        style={[styles.editButton, { backgroundColor: colors.primary }]}
-        activeOpacity={0.8}
-      >
-        <Text style={[styles.editButtonText, { color: colors.buttonText }]}>Profili Düzenle</Text>
-      </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.editButton, { backgroundColor: colors.primary }]}
+          activeOpacity={0.8}
+        >
+          <Text style={[styles.editButtonText, { color: colors.buttonText }]}>Profili Düzenle</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -87,13 +87,20 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
+
     fontWeight: '600',
     marginLeft: 8,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: 16,
   },
   profileCard: {
     alignItems: 'center',
     padding: 24,
-    margin: 16,
+    marginBottom: 16,
     borderRadius: 20,
     borderWidth: 1,
   },
@@ -115,13 +122,11 @@ const styles = StyleSheet.create({
   userEmail: {
     fontSize: 16,
   },
-  infoContainer: {
-    padding: 16,
-  },
   infoCard: {
     borderRadius: 20,
     borderWidth: 1,
     padding: 16,
+    marginBottom: 16,
   },
   infoRow: {
     flexDirection: 'row',
@@ -140,7 +145,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   editButton: {
-    margin: 16,
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -150,3 +154,4 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 }); 
+

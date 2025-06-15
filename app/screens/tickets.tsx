@@ -5,21 +5,29 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 
-export default function MyTicketsScreen() {
+export default function TicketsScreen() {
   const { theme } = useTheme();
   const colors = Colors[theme as keyof typeof Colors];
   const router = useRouter();
 
-  // Test için fazla bilet eklendi
-  const tickets = new Array(10).fill(null).map((_, i) => ({
-    id: `TK${100 + i}`,
-    from: 'İstanbul (IST)',
-    to: 'Londra (LHR)',
-    date: `15 Haziran 2024`,
-    time: '14:30',
-    status: 'Onaylandı',
-    gate: `A${i}`,
-  }));
+  const tickets = [
+    {
+      id: 'TK789',
+      from: 'İstanbul (IST)',
+      to: 'Paris (CDG)',
+      date: '1 Mart 2024',
+      time: '10:15',
+      status: 'Aktif',
+    },
+    {
+      id: 'TK456',
+      from: 'Paris (CDG)',
+      to: 'İstanbul (IST)',
+      date: '8 Mart 2024',
+      time: '13:30',
+      status: 'Aktif',
+    },
+  ];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -30,21 +38,15 @@ export default function MyTicketsScreen() {
         <Text style={[styles.headerTitle, { color: colors.text }]}>Biletlerim</Text>
       </View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
-        bounces={true}
-      >
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.ticketsContainer}>
         {tickets.map((ticket) => (
-          <TouchableOpacity
+          <View
             key={ticket.id}
             style={[styles.ticketCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-            activeOpacity={0.8}
           >
             <View style={styles.ticketHeader}>
-              <View style={styles.flightInfo}>
-                <Text style={[styles.flightNumber, { color: colors.primary }]}>{ticket.id}</Text>
+              <View style={styles.ticketInfo}>
+                <Text style={[styles.ticketNumber, { color: colors.primary }]}>{ticket.id}</Text>
                 <View style={[styles.statusBadge, { backgroundColor: colors.primary + '22' }]}>
                   <Text style={[styles.statusText, { color: colors.primary }]}>{ticket.status}</Text>
                 </View>
@@ -69,17 +71,11 @@ export default function MyTicketsScreen() {
               </View>
             </View>
 
-            <View style={styles.ticketFooter}>
-              <View style={styles.gateInfo}>
-                <IconSymbol name="door.right.hand.open" size={16} color={colors.secondary} />
-                <Text style={[styles.gateText, { color: colors.secondary }]}>Kapı {ticket.gate}</Text>
-              </View>
-              <TouchableOpacity style={styles.viewDetailsButton}>
-                <Text style={[styles.viewDetailsText, { color: colors.primary }]}>Detayları Gör</Text>
-                <IconSymbol name="chevron.right" size={16} color={colors.primary} />
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.viewDetailsButton}>
+              <Text style={[styles.viewDetailsText, { color: colors.primary }]}>Bilet Detayları</Text>
+              <IconSymbol name="chevron.right" size={16} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -106,11 +102,8 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  scrollContent: {
+  ticketsContainer: {
     padding: 16,
-    paddingBottom: 40,
-    flexGrow: 1,
-    minHeight: '100%',
   },
   ticketCard: {
     borderRadius: 20,
@@ -124,12 +117,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  flightInfo: {
+  ticketInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  flightNumber: {
+  ticketNumber: {
     fontSize: 18,
     fontWeight: '700',
   },
@@ -171,29 +164,17 @@ const styles = StyleSheet.create({
     height: 2,
     width: 60,
   },
-  ticketFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
-    paddingTop: 16,
-  },
-  gateInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  gateText: {
-    fontSize: 14,
-  },
   viewDetailsButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.1)',
+    paddingTop: 16,
   },
   viewDetailsText: {
     fontSize: 14,
     fontWeight: '600',
   },
-});
+}); 
