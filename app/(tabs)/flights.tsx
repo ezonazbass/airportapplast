@@ -5,6 +5,7 @@ import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/context/ThemeContext";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -12,15 +13,14 @@ import {
   LayoutAnimation,
   Modal,
   Platform,
-  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   UIManager,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { apiService, Flight } from "../lib/apiService";
+import apiService, { Flight } from "../lib/apiService";
 
 const cityList = [
   'İstanbul',
@@ -47,11 +47,13 @@ function getTodayISO() {
 export default function FlightsScreen() {
   const { theme } = useTheme();
   const colors = Colors[theme as keyof typeof Colors];
+  const router = useRouter();
 
   const [flights, setFlights] = useState<Flight[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [purchaseModalVisible, setPurchaseModalVisible] = useState(false);
   const [fromCity, setFromCity] = useState('İstanbul');
   const [toCity, setToCity] = useState('Londra');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -87,6 +89,16 @@ export default function FlightsScreen() {
 
   const closeDetails = () => {
     setModalVisible(false);
+    setSelectedFlight(null);
+  };
+
+  const handlePurchase = () => {
+    setModalVisible(false);
+    setPurchaseModalVisible(true);
+  };
+
+  const closePurchaseModal = () => {
+    setPurchaseModalVisible(false);
     setSelectedFlight(null);
   };
 
@@ -196,104 +208,266 @@ export default function FlightsScreen() {
                 ]}
               >
                 <View style={styles.flightHeader}>
-                  <View style={styles.flightInfo}>
-                    <Text
-                      style={[styles.flightNumber, { color: colors.primary }]}
-                    >
+                  <View style={styles.airlineContainer}>
+                    <Text style={[styles.airline, { color: colors.text }]}>
                       {item.airline}
                     </Text>
-                    <View
-                      style={[
-                        styles.statusBadge,
-                        { backgroundColor: colors.primary + "22" },
-                      ]}
-                    >
-                      <Text
-                        style={[styles.statusText, { color: colors.primary }]}
-                      >
-                        Planlandı
+                    <Text style={[styles.flightNumber, { color: colors.text }]}>
+                      {item.id}
+                    </Text>
+                  </View>
+                  <View style={styles.routeContainer}>
+                    <View style={styles.routeInfo}>
+                      <Text style={[styles.airportText, { color: colors.text }]}>
+                        {item.from}
+                      </Text>
+                    </View>
+                    <View style={styles.routeLine}>
+                      <View
+                        style={[styles.line, { backgroundColor: colors.primary }]}
+                      />
+                      <IconSymbol
+                        name="airplane"
+                        size={20}
+                        color={colors.primary}
+                      />
+                    </View>
+                    <View style={styles.routeInfo}>
+                      <Text style={[styles.airportText, { color: colors.text }]}>
+                        {item.to}
                       </Text>
                     </View>
                   </View>
-                  <Text style={[styles.timeText, { color: colors.text }]}>
-                    {item.departureTime}
-                  </Text>
-                </View>
-                <View style={styles.routeContainer}>
-                  <View style={styles.routeInfo}>
-                    <Text style={[styles.airportText, { color: colors.text }]}>
-                      {item.from}
-                    </Text>
+                  <View style={styles.flightFooter}>
+                    <View style={styles.gateInfo}>
+                      <IconSymbol
+                        name="door.right.hand.open"
+                        size={16}
+                        color={colors.secondary}
+                      />
+                      <Text
+                        style={[styles.gateText, { color: colors.secondary }]}
+                      >
+                        Fiyat: {item.price} {item.currency}
+                      </Text>
+                    </View>
+                    <TouchableOpacity style={styles.detailsButton} onPress={() => openDetails(item)}>
+                      <Text
+                        style={[styles.detailsText, { color: colors.primary }]}
+                      >
+                        Detaylar
+                      </Text>
+                      <IconSymbol
+                        name="chevron.right"
+                        size={16}
+                        color={colors.primary}
+                      />
+                    </TouchableOpacity>
                   </View>
-                  <View style={styles.routeLine}>
-                    <View
-                      style={[styles.line, { backgroundColor: colors.primary }]}
-                    />
-                    <IconSymbol
-                      name="airplane"
-                      size={20}
-                      color={colors.primary}
-                    />
-                  </View>
-                  <View style={styles.routeInfo}>
-                    <Text style={[styles.airportText, { color: colors.text }]}>
-                      {item.to}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.flightFooter}>
-                  <View style={styles.gateInfo}>
-                    <IconSymbol
-                      name="door.right.hand.open"
-                      size={16}
-                      color={colors.secondary}
-                    />
-                    <Text
-                      style={[styles.gateText, { color: colors.secondary }]}
-                    >
-                      Fiyat: {item.price} {item.currency}
-                    </Text>
-                  </View>
-                  <TouchableOpacity style={styles.detailsButton} onPress={() => openDetails(item)}>
-                    <Text
-                      style={[styles.detailsText, { color: colors.primary }]}
-                    >
-                      Detaylar
-                    </Text>
-                    <IconSymbol
-                      name="chevron.right"
-                      size={16}
-                      color={colors.primary}
-                    />
-                  </TouchableOpacity>
                 </View>
               </View>
             )}
           />
         )}
       </View>
+
       <Modal
         visible={modalVisible}
-        animationType="slide"
         transparent
+        animationType="fade"
         onRequestClose={closeDetails}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
-            <Text style={[styles.modalTitle, { color: colors.primary }]}>Uçuş Detayları</Text>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
             {selectedFlight && (
               <>
-                <Text style={[styles.modalText, { color: colors.text }]}>Havayolu: {selectedFlight.airline}</Text>
-                <Text style={[styles.modalText, { color: colors.text }]}>Kalkış: {selectedFlight.from} - {selectedFlight.departureDate} {selectedFlight.departureTime}</Text>
-                <Text style={[styles.modalText, { color: colors.text }]}>Varış: {selectedFlight.to} - {selectedFlight.returnTime}</Text>
-                <Text style={[styles.modalText, { color: colors.text }]}>Süre: {selectedFlight.duration.replace('PT', '').toLowerCase()}</Text>
-                <Text style={[styles.modalText, { color: colors.text }]}>Fiyat: {selectedFlight.price} {selectedFlight.currency}</Text>
-                <Text style={[styles.modalText, { color: colors.text }]}>Uçuş Kodu: {selectedFlight.id}</Text>
+                <View style={styles.modalHeader}>
+                  <Text
+                    style={[styles.modalTitle, { color: colors.text }]}
+                  >
+                    Uçuş Detayları
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={closeDetails}
+                  >
+                    <IconSymbol
+                      name="xmark"
+                      size={24}
+                      color={colors.text}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.modalBody}>
+                  <View style={styles.detailRow}>
+                    <Text style={[styles.detailLabel, { color: colors.text }]}>
+                      Uçuş:
+                    </Text>
+                    <Text
+                      style={[styles.detailValue, { color: colors.text }]}
+                    >
+                      {selectedFlight.airline} {selectedFlight.id}
+                    </Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={[styles.detailLabel, { color: colors.text }]}>
+                      Rota:
+                    </Text>
+                    <Text
+                      style={[styles.detailValue, { color: colors.text }]}
+                    >
+                      {selectedFlight.from} - {selectedFlight.to}
+                    </Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={[styles.detailLabel, { color: colors.text }]}>
+                      Tarih:
+                    </Text>
+                    <Text
+                      style={[styles.detailValue, { color: colors.text }]}
+                    >
+                      {selectedFlight.departureDate}
+                    </Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={[styles.detailLabel, { color: colors.text }]}>
+                      Saat:
+                    </Text>
+                    <Text
+                      style={[styles.detailValue, { color: colors.text }]}
+                    >
+                      {selectedFlight.departureTime}
+                    </Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={[styles.detailLabel, { color: colors.text }]}>
+                      Kapı:
+                    </Text>
+                    <Text
+                      style={[styles.detailValue, { color: colors.text }]}
+                    >
+                      {selectedFlight.id}
+                    </Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={[styles.detailLabel, { color: colors.text }]}>
+                      Fiyat:
+                    </Text>
+                    <Text
+                      style={[styles.detailValue, { color: colors.text }]}
+                    >
+                      {selectedFlight.price} {selectedFlight.currency}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.modalFooter}>
+                  <TouchableOpacity
+                    style={[
+                      styles.purchaseButton,
+                      { backgroundColor: colors.primary },
+                    ]}
+                    onPress={handlePurchase}
+                  >
+                    <Text style={styles.purchaseButtonText}>
+                      Bilet Satın Al
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </>
             )}
-            <Pressable style={styles.closeButton} onPress={closeDetails}>
-              <Text style={{ color: colors.buttonText, fontWeight: '600' }}>Kapat</Text>
-            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={purchaseModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closePurchaseModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            {selectedFlight && (
+              <>
+                <View style={styles.modalHeader}>
+                  <Text
+                    style={[styles.modalTitle, { color: colors.text }]}
+                  >
+                    Bilet Satın Al
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={closePurchaseModal}
+                  >
+                    <IconSymbol
+                      name="xmark"
+                      size={24}
+                      color={colors.text}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.modalBody}>
+                  <Text
+                    style={[styles.purchaseText, { color: colors.text }]}
+                  >
+                    {selectedFlight.airline} {selectedFlight.id} uçuşu için bilet satın almak üzeresiniz.
+                  </Text>
+                  <Text
+                    style={[styles.purchaseText, { color: colors.text }]}
+                  >
+                    Fiyat: {selectedFlight.price} {selectedFlight.currency}
+                  </Text>
+                </View>
+
+                <View style={styles.modalFooter}>
+                  <TouchableOpacity
+                    style={[
+                      styles.purchaseButton,
+                      { backgroundColor: colors.primary },
+                    ]}
+                    onPress={() => {
+                      closePurchaseModal();
+                      router.push({
+                        pathname: '/screens/payment',
+                        params: {
+                          flightId: selectedFlight.id,
+                          airline: selectedFlight.airline,
+                          from: selectedFlight.from,
+                          to: selectedFlight.to,
+                          date: selectedFlight.departureDate,
+                          time: selectedFlight.departureTime,
+                          gate: selectedFlight.id,
+                          price: selectedFlight.price,
+                          currency: selectedFlight.currency
+                        }
+                      });
+                    }}
+                  >
+                    <Text style={styles.purchaseButtonText}>
+                      Ödemeye Geç
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </View>
         </View>
       </Modal>
@@ -306,199 +480,203 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 16,
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: "700",
+    fontWeight: 'bold',
   },
   filterButton: {
     padding: 8,
   },
-  flightsContainer: {
-    padding: 16,
-  },
-  flightCard: {
-    borderRadius: 20,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 16,
-  },
-  flightHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  flightInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  flightNumber: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  timeText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  routeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  routeInfo: {
-    flex: 1,
-  },
-  airportText: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  routeLine: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-  },
-  line: {
-    height: 2,
-    width: 60,
-  },
-  flightFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: "rgba(0,0,0,0.1)",
-    paddingTop: 16,
-  },
-  gateInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  gateText: {
-    fontSize: 14,
-  },
-  detailsButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  detailsText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    width: '85%',
-    borderRadius: 20,
-    padding: 24,
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  modalText: {
-    fontSize: 16,
-    marginBottom: 4,
-  },
-  closeButton: {
-    marginTop: 16,
-    alignSelf: 'stretch',
-    backgroundColor: '#007AFF',
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  searchContainer: {
-    padding: 16,
-    backgroundColor: 'rgba(0,0,0,0.03)',
-    borderRadius: 16,
-    margin: 16,
-    marginBottom: 0,
-    gap: 12,
-  },
-  pickerWrapper: {
-    marginBottom: 8,
-  },
-  pickerLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 4,
-  },
-  picker: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    height: 44,
-    marginBottom: 4,
-  },
-  searchButton: {
-    marginTop: 8,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  searchButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
   accordionHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    backgroundColor: 'rgba(0,0,0,0.04)',
-    borderRadius: 16,
-    marginHorizontal: 16,
-    marginTop: 8,
-    marginBottom: 0,
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
   },
   accordionTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
+  },
+  searchContainer: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  pickerWrapper: {
+    marginBottom: 16,
+  },
+  pickerLabel: {
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  picker: {
+    height: 50,
   },
   dateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingVertical: 10,
+    height: 50,
     paddingHorizontal: 12,
-    marginTop: 2,
-    marginBottom: 4,
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
   },
   dateButtonText: {
+    marginLeft: 8,
+    fontSize: 16,
+  },
+  searchButton: {
+    height: 50,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  flightsContainer: {
+    flex: 1,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  flightCard: {
+    margin: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  flightHeader: {
+    padding: 16,
+  },
+  airlineContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  airline: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 8,
+  },
+  flightNumber: {
+    fontSize: 16,
+  },
+  routeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  routeInfo: {
+    flex: 1,
+  },
+  routeLine: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 12,
+  },
+  line: {
+    flex: 1,
+    height: 2,
+  },
+  airportText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  flightFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  gateInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  gateText: {
+    marginLeft: 4,
+    fontSize: 14,
+  },
+  detailsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  detailsText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '90%',
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  modalBody: {
+    padding: 16,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  detailLabel: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  detailValue: {
+    fontSize: 16,
+  },
+  modalFooter: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  purchaseButton: {
+    height: 50,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  purchaseButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  purchaseText: {
+    fontSize: 16,
+    marginBottom: 16,
+    textAlign: 'center',
   },
 });

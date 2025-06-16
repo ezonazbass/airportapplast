@@ -2,9 +2,11 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
+
 
 type ReservationStatus = 'active' | 'completed' | 'cancelled';
 
@@ -27,47 +29,46 @@ export default function PaymentScreen() {
   const { theme } = useTheme();
   const colors = Colors[theme as keyof typeof Colors];
   const router = useRouter();
-  const params = useLocalSearchParams<RouteParams>();
+  const params = useLocalSearchParams();
+
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardHolder, setCardHolder] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
+  const [cvv, setCvv] = useState("");
 
   const handlePayment = async () => {
     try {
-      // Mevcut rezervasyonları al
-      const existingReservationsJson = await AsyncStorage.getItem('reservations');
-      const existingReservations: Reservation[] = existingReservationsJson 
-        ? JSON.parse(existingReservationsJson) 
-        : [];
-
-      // Yeni rezervasyon oluştur
-      const newReservation: Reservation = {
-        id: Date.now().toString(),
-        loungeName: params.name || 'VIP Lounge',
-        terminal: params.terminal || 'Terminal 1',
-        price: params.price || '₺750',
-        date: new Date().toISOString(),
-        status: 'active'
+      // Yeni bilet oluştur
+      const newTicket = {
+        id: params.flightId as string,
+        airline: params.airline as string,
+        from: params.from as string,
+        to: params.to as string,
+        date: params.date as string,
+        time: params.time as string,
+        status: 'Onaylandı',
+        gate: 'A' + Math.floor(Math.random() * 10),
+        price: params.price as string,
+        currency: params.currency as string,
+        purchaseDate: new Date().toISOString()
       };
 
-      // Yeni rezervasyonu listeye ekle
-      const updatedReservations = [...existingReservations, newReservation];
+      // Mevcut biletleri al
+      const existingTicketsJson = await AsyncStorage.getItem('tickets');
+      const existingTickets = existingTicketsJson ? JSON.parse(existingTicketsJson) : [];
+      
+      // Yeni bileti ekle
+      const updatedTickets = [...existingTickets, newTicket];
+      
+      // Biletleri kaydet
+      await AsyncStorage.setItem('tickets', JSON.stringify(updatedTickets));
 
-      // Güncellenmiş listeyi kaydet
-      await AsyncStorage.setItem('reservations', JSON.stringify(updatedReservations));
-
-      Alert.alert(
-        'Başarılı',
-        'Rezervasyonunuz başarıyla tamamlandı.',
-        [
-          {
-            text: 'Tamam',
-            onPress: () => {
-              router.push('/(tabs)/account');
-            }
-          }
-        ]
-      );
+      // Biletlerim sayfasına yönlendir
+      router.push('/screens/my-tickets');
     } catch (error) {
-      console.error('Rezervasyon kaydedilirken hata oluştu:', error);
-      Alert.alert('Hata', 'Rezervasyon kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.');
+      console.error('Bilet kaydedilirken hata oluştu:', error);
+      // Hata durumunda da yönlendirme yap
+      router.push('/screens/my-tickets');
     }
   };
 
@@ -81,60 +82,76 @@ export default function PaymentScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
-        <View style={[styles.summaryCard, { backgroundColor: colors.card }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Rezervasyon Özeti</Text>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text }]}>Lounge</Text>
-            <Text style={[styles.summaryValue, { color: colors.text }]}>{params.name || 'VIP Lounge'}</Text>
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.cardTitle, { color: colors.text }]}>Kart Bilgileri</Text>
+          
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: colors.text }]}>Kart Numarası</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
+              placeholder="1234 5678 9012 3456"
+              placeholderTextColor={colors.secondary}
+              value={cardNumber}
+              onChangeText={setCardNumber}
+              keyboardType="numeric"
+              maxLength={19}
+            />
           </View>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text }]}>Terminal</Text>
-            <Text style={[styles.summaryValue, { color: colors.text }]}>{params.terminal || 'Terminal 1'}</Text>
+
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: colors.text }]}>Kart Sahibi</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
+              placeholder="Ad Soyad"
+              placeholderTextColor={colors.secondary}
+              value={cardHolder}
+              onChangeText={setCardHolder}
+            />
           </View>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.text }]}>Tutar</Text>
-            <Text style={[styles.summaryValue, { color: colors.primary }]}>{params.price || '₺750'}</Text>
+
+          <View style={styles.row}>
+            <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
+              <Text style={[styles.label, { color: colors.text }]}>Son Kullanma Tarihi</Text>
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
+                placeholder="MM/YY"
+                placeholderTextColor={colors.secondary}
+                value={expiryDate}
+                onChangeText={setExpiryDate}
+                maxLength={5}
+              />
+            </View>
+
+            <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
+              <Text style={[styles.label, { color: colors.text }]}>CVV</Text>
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
+                placeholder="123"
+                placeholderTextColor={colors.secondary}
+                value={cvv}
+                onChangeText={setCvv}
+                keyboardType="numeric"
+                maxLength={3}
+              />
+            </View>
           </View>
         </View>
 
-        <View style={[styles.paymentCard, { backgroundColor: colors.card }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Ödeme Yöntemi</Text>
-          <TouchableOpacity
-            style={[styles.cardItem, { borderColor: colors.primary }]}
-            onPress={() => router.push('/screens/payment-methods')}
-          >
-            <View style={styles.cardInfo}>
-              <IconSymbol name="creditcard.fill" size={24} color={colors.primary} />
-              <View style={styles.cardDetails}>
-                <Text style={[styles.cardNumber, { color: colors.text }]}>
-                  **** **** **** 1234
-                </Text>
-                <Text style={[styles.cardName, { color: colors.text }]}>JOHN DOE</Text>
-              </View>
-            </View>
-            <View style={[styles.defaultBadge, { backgroundColor: colors.primary }]}>
-              <Text style={styles.defaultBadgeText}>Varsayılan</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.addCardButton, { borderColor: colors.primary }]}
-            onPress={() => router.push('/screens/payment-methods')}
-          >
-            <IconSymbol name="plus.circle.fill" size={24} color={colors.primary} />
-            <Text style={[styles.addCardText, { color: colors.primary }]}>Yeni Kart Ekle</Text>
-          </TouchableOpacity>
+        <View style={[styles.summaryCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Text style={[styles.summaryTitle, { color: colors.text }]}>Ödeme Özeti</Text>
+          <View style={styles.summaryRow}>
+            <Text style={[styles.summaryLabel, { color: colors.text }]}>Toplam Tutar</Text>
+            <Text style={[styles.summaryValue, { color: colors.primary }]}>{params.price} {params.currency}</Text>
+          </View>
         </View>
-      </ScrollView>
 
-      <View style={[styles.footer, { backgroundColor: colors.card }]}>
         <TouchableOpacity
           style={[styles.payButton, { backgroundColor: colors.primary }]}
           onPress={handlePayment}
         >
-          <Text style={[styles.payButtonText, { color: '#FFFFFF' }]}>Ödemeyi Tamamla</Text>
+          <Text style={styles.payButtonText}>Ödemeyi Tamamla</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -162,12 +179,42 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
   },
-  summaryCard: {
-    borderRadius: 12,
-    padding: 16,
+  card: {
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 20,
     marginBottom: 16,
   },
-  sectionTitle: {
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  input: {
+    height: 48,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    fontSize: 16,
+  },
+  row: {
+    flexDirection: 'row',
+  },
+  summaryCard: {
+    borderRadius: 20,
+    borderWidth: 1,
+    padding: 20,
+    marginBottom: 24,
+  },
+  summaryTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 16,
@@ -175,80 +222,24 @@ const styles = StyleSheet.create({
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    alignItems: 'center',
   },
   summaryLabel: {
     fontSize: 16,
   },
   summaryValue: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  paymentCard: {
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  cardItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  cardInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cardDetails: {
-    marginLeft: 12,
-
-  },
-  cardNumber: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  cardName: {
-    fontSize: 14,
-    marginTop: 4,
-  },
-  defaultBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  defaultBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  addCardButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 8,
-    marginTop: 8,
-  },
-  addCardText: {
-    fontSize: 16,
-    fontWeight: '500',
-    marginLeft: 8,
-  },
-  footer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
+    fontSize: 20,
+    fontWeight: '700',
   },
   payButton: {
-    padding: 16,
+    height: 56,
     borderRadius: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
   },
   payButtonText: {
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
   },

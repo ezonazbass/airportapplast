@@ -1,11 +1,12 @@
 // Amadeus API yapılandırması
 const API_BASE_URL = 'https://test.api.amadeus.com/v2';
-const API_KEY = 'bEewcJHWlYrhcl3d5cTEENHAUIoRtpi5';
-const API_SECRET = 'Q4xjNAlbvsZZ3OpC';
+const API_KEY = 'peF065KsSuA7zct9A7vGhvZXu2NyUQgd';
+const API_SECRET = 'Jfku6zq3Tj7XgWHM';
 
 // Token alma fonksiyonu
 async function getAccessToken() {
   try {
+    console.log('Token alma isteği başlatılıyor...');
     const response = await fetch('https://test.api.amadeus.com/v1/security/oauth2/token', {
       method: 'POST',
       headers: {
@@ -14,15 +15,17 @@ async function getAccessToken() {
       body: `grant_type=client_credentials&client_id=${API_KEY}&client_secret=${API_SECRET}`
     });
 
+    console.log('Token yanıtı alındı:', response.status);
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(`Token alma hatası: ${errorData.error_description || response.statusText}`);
     }
 
     const data = await response.json();
+    console.log('Token başarıyla alındı');
     return data.access_token;
   } catch (error) {
-    console.error('Token alma hatası:', error);
+    console.error('Token alma hatası detayı:', error);
     throw error;
   }
 }
@@ -76,6 +79,11 @@ class AmadeusService {
       throw error;
     }
   }
+
+  async getFlightDetails(flightId: string) {
+    // Uçuş detayları
+    return {};
+  }
 }
 
-export const amadeusService = new AmadeusService(); 
+export default new AmadeusService(); 

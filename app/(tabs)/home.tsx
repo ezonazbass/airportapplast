@@ -1,9 +1,10 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { Colors } from '@/constants/Colors';
+import { useTheme } from '@/context/ThemeContext';
 import { useRouter } from 'expo-router';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../../context/ThemeContext';
+import { SFSymbols6_0 } from 'sf-symbols-typescript';
 
 export default function HomeScreen() {
   const { theme } = useTheme();
@@ -11,10 +12,10 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const quickActions = [
-    { title: 'Online Check-in', icon: 'checkmark.circle.fill', color: '#E91E63', onPress: () => router.push('/screens/checkin') },
-    { title: 'Uçuş Durumu', icon: 'airplane', color: colors.primary, onPress: () => router.push('/screens/flight-status') },
-    { title: 'Bagaj Takip', icon: 'suitcase.fill', color: colors.secondary, onPress: () => router.push('/screens/baggage-tracking') },
-    { title: 'Harita', icon: 'map.fill', color: '#1976D2', onPress: () => router.push('/screens/airport-map') },
+    { title: 'Online Check-in', icon: 'ticket.fill' as SFSymbols6_0, color: '#E91E63', onPress: () => router.push('/screens/checkin') },
+    { title: 'Uçuş Durumu', icon: 'airplane' as SFSymbols6_0, color: colors.primary, onPress: () => router.push('/screens/flight-status') },
+    { title: 'Bagaj Takip', icon: 'suitcase.fill' as SFSymbols6_0, color: colors.secondary, onPress: () => router.push('/screens/baggage-tracking') },
+    { title: 'Harita', icon: 'globe' as SFSymbols6_0, color: '#1976D2', onPress: () => router.push('/screens/airport-map') },
   ];
 
   const flightStatus = {
@@ -31,14 +32,21 @@ export default function HomeScreen() {
         {/* Dummy airport image */}
         <View style={styles.imageWrapper}>
           <Image
-            source={{ uri: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80' }}
+            source={{ uri: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=800&q=80' }}
             style={styles.headerImage}
             resizeMode="cover"
           />
         </View>
         <View style={[styles.header, { backgroundColor: colors.card }]}> 
-          <Text style={[styles.welcomeText, { color: colors.text }]}>Hoş Geldiniz</Text>
-          <Text style={[styles.locationText, { color: colors.secondary }]}>İstanbul Havalimanı (IST)</Text>
+          <View style={styles.headerContent}>
+            <Text style={[styles.welcomeText, { color: colors.text }]}>Hoş Geldiniz</Text>
+            <TouchableOpacity 
+              onPress={() => router.push('/screens/auth')}
+              style={styles.profileButton}
+            >
+              <IconSymbol name="person.fill" size={28} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Quick Actions */}
@@ -148,6 +156,13 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     alignItems: 'center',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 8,
   },
   welcomeText: {
     fontSize: 24,
@@ -279,5 +294,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     letterSpacing: 0.1,
+  },
+  profileButton: {
+    padding: 8,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 20,
   },
 }); 

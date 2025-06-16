@@ -1,5 +1,5 @@
 import { Alert } from 'react-native';
-import { amadeusService } from './amadeus';
+import amadeusService from './amadeus';
 
 // Şehir kodları ve isimleri
 const cityCodes: { [key: string]: string } = {
@@ -50,9 +50,10 @@ export interface FlightSearchParams {
   isRoundTrip: boolean;
 }
 
-class ApiService {
+// API servisi
+const ApiService = {
   // Tüm şehirleri getir
-  async getCities(): Promise<string[]> {
+  getCities: async (): Promise<string[]> => {
     try {
       return Object.keys(cityCodes);
     } catch (error) {
@@ -60,10 +61,10 @@ class ApiService {
       Alert.alert('Hata', 'Şehir listesi alınırken bir hata oluştu.');
       return [];
     }
-  }
+  },
 
   // Tüm havayollarını getir
-  async getAirlines(): Promise<string[]> {
+  getAirlines: async (): Promise<string[]> => {
     try {
       return Object.values(airlineCodes);
     } catch (error) {
@@ -71,10 +72,10 @@ class ApiService {
       Alert.alert('Hata', 'Havayolu listesi alınırken bir hata oluştu.');
       return [];
     }
-  }
+  },
 
   // Amadeus API yanıtını uygulama formatına dönüştür
-  private transformFlightData(amadeusFlight: any): Flight {
+  transformFlightData: (amadeusFlight: any): Flight => {
     try {
       const segment = amadeusFlight.itineraries[0].segments[0];
       const airlineCode = amadeusFlight.validatingAirlineCodes[0];
@@ -97,10 +98,10 @@ class ApiService {
       console.error('Uçuş verisi dönüştürülürken hata oluştu:', error);
       throw new Error('Uçuş verisi dönüştürülemedi');
     }
-  }
+  },
 
   // Uçuşları arama
-  async searchFlights(params: FlightSearchParams): Promise<Flight[]> {
+  searchFlights: async (params: FlightSearchParams): Promise<Flight[]> => {
     try {
       if (!params.from || !params.to || !params.departureDate) {
         throw new Error('Gerekli parametreler eksik');
@@ -124,7 +125,10 @@ class ApiService {
       }
 
       // API yanıtını uygulama formatına dönüştür
-      const flights = amadeusFlights.map((flight: any) => this.transformFlightData(flight));
+      const flights = amadeusFlights.map((flight: any) => ApiService.transformFlightData(flight));
+      
+      console.log('Amadeus API yanıtı:', amadeusFlights);
+      console.log('Dönüştürülmüş uçuşlar:', flights);
 
       return flights;
     } catch (error) {
@@ -136,10 +140,10 @@ class ApiService {
       }
       return [];
     }
-  }
+  },
 
   // Tek bir uçuş detayını getir
-  async getFlightDetails(flightId: string): Promise<Flight | null> {
+  getFlightDetails: async (flightId: string): Promise<Flight | null> => {
     try {
       if (!flightId) {
         throw new Error('Uçuş ID\'si gerekli');
@@ -147,7 +151,7 @@ class ApiService {
 
       // Amadeus API'sinde tek uçuş detayı endpoint'i yok
       // Bu yüzden arama yapıp ID'ye göre filtreleme yapıyoruz
-      const flights = await this.searchFlights({
+      const flights = await ApiService.searchFlights({
         from: '',
         to: '',
         departureDate: '',
@@ -169,6 +173,6 @@ class ApiService {
       return null;
     }
   }
-}
+};
 
-export const apiService = new ApiService(); 
+export default ApiService; 

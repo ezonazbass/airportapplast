@@ -1,107 +1,131 @@
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { Colors } from '@/constants/Colors';
-import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../../context/ThemeContext';
+
+interface BaggageInfo {
+  tag: string;
+  flightId: string;
+  airline: string;
+  from: string;
+  to: string;
+  date: string;
+  time: string;
+  passengerName: string;
+  status: string;
+  lastUpdate: string;
+}
 
 export default function BaggageTrackingScreen() {
-  const { theme } = useTheme();
-  const colors = Colors[theme as keyof typeof Colors];
-  const router = useRouter();
+  const { colors } = useTheme();
+  const [baggages, setBaggages] = useState<BaggageInfo[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const baggageItems = [
-    {
-      id: 'TK123456',
-      flightNumber: 'TK123',
-      status: 'Bagaj Teslim Edildi',
-      location: 'Bagaj Teslim Alanı 3',
-      lastUpdate: '10:30',
-      color: '#4CAF50',
-    },
-    {
-      id: 'TK789012',
-      flightNumber: 'TK456',
-      status: 'Bagaj İşlemde',
-      location: 'Terminal 1',
-      lastUpdate: '09:45',
-      color: '#FFA000',
-    },
-  ];
+  useEffect(() => {
+    loadBaggages();
+  }, []);
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'Bagaj Teslim Edildi':
-        return 'checkmark.circle.fill';
-      case 'Bagaj İşlemde':
-        return 'clock.fill';
-      default:
-        return 'questionmark.circle.fill';
+  const loadBaggages = async () => {
+    try {
+      const baggageJson = await AsyncStorage.getItem('baggageTracking');
+      if (baggageJson) {
+        const baggageData = JSON.parse(baggageJson);
+        // Tüm bagajların durumunu "Teslim Edildi" olarak ayarla
+        const updatedBaggageData = baggageData.map((baggage: BaggageInfo) => ({
+          ...baggage,
+          status: 'Teslim Edildi'
+        }));
+        setBaggages(updatedBaggageData);
+      }
+    } catch (error) {
+      console.error('Bagaj bilgileri yüklenirken hata oluştu:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <IconSymbol name="chevron.left" size={24} color={colors.primary} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Bagaj Takip</Text>
-      </View>
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.text }]}>Bagaj bilgileri yükleniyor...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
-        bounces={true}
-      >
-        <View style={[styles.searchContainer, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <IconSymbol name="magnifyingglass" size={20} color={colors.secondary} />
-          <Text style={[styles.searchPlaceholder, { color: colors.secondary }]}>
-            Bagaj numarası veya uçuş numarası ile arayın
+  if (baggages.length === 0) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.emptyContainer}>
+          <Ionicons name="airplane-outline" size={64} color={colors.text} />
+          <Text style={[styles.emptyText, { color: colors.text }]}>Henüz bagajınız bulunmuyor</Text>
+          <Text style={[styles.emptySubText, { color: colors.text }]}>
+            Check-in yaptığınızda bagajlarınız burada görünecektir
           </Text>
         </View>
+      </SafeAreaView>
+    );
+  }
 
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>Son Bagajlarım</Text>
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.header}>
+          <Text style={[styles.title, { color: colors.text }]}>Bagaj Takip</Text>
+        </View>
 
-        {baggageItems.map((item) => (
-          <View
-            key={item.id}
-            style={[styles.baggageCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-          >
-            <View style={styles.baggageHeader}>
-              <View>
-                <Text style={[styles.baggageId, { color: colors.text }]}>{item.id}</Text>
-                <Text style={[styles.flightNumber, { color: colors.secondary }]}>
-                  Uçuş: {item.flightNumber}
-                </Text>
+        {baggages.map((baggage, index) => (
+          <View key={index} style={[styles.card, { backgroundColor: colors.card }]}>
+            <View style={styles.cardHeader}>
+              <View style={styles.airlineContainer}>
+                <Text style={[styles.airline, { color: colors.text }]}>{baggage.airline}</Text>
+                <Text style={[styles.flightNumber, { color: colors.text }]}>{baggage.flightId}</Text>
               </View>
-              <View style={[styles.statusBadge, { backgroundColor: item.color + '22' }]}>
-                <IconSymbol name={getStatusIcon(item.status)} size={16} color={item.color} />
-                <Text style={[styles.statusText, { color: item.color }]}>{item.status}</Text>
-              </View>
-            </View>
-
-            <View style={styles.baggageInfo}>
-              <View style={styles.infoRow}>
-                <IconSymbol name="location.fill" size={16} color={colors.secondary} />
-                <Text style={[styles.infoText, { color: colors.text }]}>{item.location}</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <IconSymbol name="clock.fill" size={16} color={colors.secondary} />
-                <Text style={[styles.infoText, { color: colors.text }]}>
-                  Son Güncelleme: {item.lastUpdate}
-                </Text>
+              <View style={styles.statusContainer}>
+                <Text style={[styles.status, { color: colors.text }]}>Teslim Edildi</Text>
               </View>
             </View>
 
-            <TouchableOpacity
-              style={[styles.detailsButton, { borderColor: colors.primary }]}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.detailsButtonText, { color: colors.primary }]}>Detayları Gör</Text>
-              <IconSymbol name="chevron.right" size={16} color={colors.primary} />
-            </TouchableOpacity>
+            <View style={styles.routeContainer}>
+              <View style={styles.route}>
+                <Text style={[styles.city, { color: colors.text }]}>{baggage.from}</Text>
+                <View style={styles.routeLine}>
+                  <View style={[styles.routeDot, { backgroundColor: colors.primary }]} />
+                  <View style={[styles.routeLineInner, { backgroundColor: colors.primary }]} />
+                  <View style={[styles.routeDot, { backgroundColor: colors.primary }]} />
+                </View>
+                <Text style={[styles.city, { color: colors.text }]}>{baggage.to}</Text>
+              </View>
+            </View>
+
+            <View style={styles.detailsContainer}>
+              <View style={styles.detailRow}>
+                <Text style={[styles.detailLabel, { color: colors.text }]}>Yolcu:</Text>
+                <Text style={[styles.detailValue, { color: colors.text }]}>{baggage.passengerName}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={[styles.detailLabel, { color: colors.text }]}>Bagaj Etiketi:</Text>
+                <Text style={[styles.detailValue, { color: colors.text }]}>{baggage.tag}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={[styles.detailLabel, { color: colors.text }]}>Tarih:</Text>
+                <Text style={[styles.detailValue, { color: colors.text }]}>{baggage.date}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={[styles.detailLabel, { color: colors.text }]}>Saat:</Text>
+                <Text style={[styles.detailValue, { color: colors.text }]}>{baggage.time}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={[styles.detailLabel, { color: colors.text }]}>Son Güncelleme:</Text>
+                <Text style={[styles.detailValue, { color: colors.text }]}>
+                  {new Date(baggage.lastUpdate).toLocaleString('tr-TR')}
+                </Text>
+              </View>
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -113,98 +137,127 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
   scrollView: {
     flex: 1,
   },
-  scrollContent: {
+  header: {
     padding: 16,
-    paddingBottom: 40,
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 12,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  card: {
+    margin: 16,
     borderRadius: 12,
-    borderWidth: 1,
-    marginBottom: 24,
-    gap: 8,
-  },
-  searchPlaceholder: {
-    fontSize: 14,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 16,
-  },
-  baggageCard: {
-    borderRadius: 20,
-    borderWidth: 1,
     padding: 16,
-    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  baggageHeader: {
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 16,
   },
-  baggageId: {
+  airlineContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  airline: {
     fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontWeight: 'bold',
+    marginRight: 8,
   },
   flightNumber: {
+    fontSize: 16,
+  },
+  statusContainer: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  status: {
     fontSize: 14,
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  statusText: {
-    fontSize: 12,
     fontWeight: '600',
   },
-  baggageInfo: {
-    gap: 8,
+  routeContainer: {
     marginBottom: 16,
   },
-  infoRow: {
+  route: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'space-between',
   },
-  infoText: {
-    fontSize: 14,
-  },
-  detailsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 10,
-  },
-  detailsButtonText: {
-    fontSize: 14,
+  city: {
+    fontSize: 16,
     fontWeight: '600',
+  },
+  routeLine: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 12,
+  },
+  routeDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  routeLineInner: {
+    flex: 1,
+    height: 2,
+    marginHorizontal: 4,
+  },
+  detailsContainer: {
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+    paddingTop: 16,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  detailValue: {
+    fontSize: 14,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptySubText: {
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
+    opacity: 0.7,
   },
 });
